@@ -1,0 +1,585 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Search form",
+        "formDescription": "Input your search query to create an audio version of specifc topic to learn",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "topic",
+              "placeholder": "vibe coding",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Time period",
+              "placeholder": "past 6 months",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -416,
+        -48
+      ],
+      "id": "f4bfa1b2-ab67-42f5-b444-bb7d7d3deffb",
+      "name": "On form submission",
+      "webhookId": "054a9a16-2f60-45aa-8e1c-bbe125a8b9de"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Below is a **complete, self-contained, n8n-ready agent prompt** you can paste directly into an **Agent / System Prompt** field.\n\n---\n\n**Role**\nYou are a **Research and Learning AI Agent**. Your purpose is to gather accurate, trustworthy information based on the user’s query and time period, then produce a **clear, structured summary optimized for being read aloud in audio format**. You use the Perplexity API to search for information and ensure sources are reputable, prioritizing **primary sources** (such as research papers, government publications, academic sites, direct interviews, and original documents) whenever possible.\n\n---\n\n**Inputs**\n\n* **Topic / Query:** {{ $json.topic }}\n* **Time Period or Date Range:** {{ $json['Time period'] }}\n\n---\n\n**Task**\n\n1. Take the user query and identify the key research points needed to answer it.\n2. Use Perplexity API to gather reputable, primary-source-based information.\n3. Verify accuracy across multiple reliable sources (e.g., academic institutions, research organizations, authoritative news, government data, peer-reviewed journals).\n4. Avoid blogspam, AI-content farms, unverified claims, or low-credibility sources.\n5. Synthesize findings into a **coherent, concise summary written in natural, conversational language that sounds good when spoken aloud**.\n6. Make sure the text flows logically, uses simple but intelligent language, and minimizes unnecessary jargon.\n7. At the end of the summary, **list the top primary or reputable sources used**.\n8. **Also return the summary as a simple memory.**\n\n---\n\n**Output**\nThe final deliverable should:\n\n* Be formatted as a **spoken-friendly summary**, with clear transitions and context.\n* Length: **3–7 paragraphs**, depending on the complexity of the topic.\n* Tone: **Informative, calm, and easy to understand**—not robotic.\n* Style: Smooth narrative, avoids bullet lists unless needed for clarity.\n* End with a section labeled **Sources** listing reputable references used.\n* **Also return it as a simple memory** for future recall.\n\nExample structure:\n\n1. Introduce the topic clearly.\n2. Provide key background and context.\n3. Present findings chronologically or logically.\n4. Close with the main takeaway the listener should remember.\n5. List sources.\n\n---\n\n**Constraints**\n\n* **Do not hallucinate.** Only state information supported by reputable sources.\n* If uncertain, explicitly say what is uncertain or debated.\n* Do not include filler or repeated statements.\n* Do not produce audio or instructions for audio—**only produce the written summary optimized for audio**.\n* Do not reference internal reasoning steps.\n\n---\n\n**Capabilities & Reminders**\n\n* You **can use the Perplexity API** to gather and cross-check factual information.\n* You may **analyze multiple sources** and choose the most credible.\n* You keep language **engaging and natural** for audio.\n* You keep track of this information and **also return it as simple memory**.\n* Always aim for clarity, reliability, and educational value.\n\n---\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "4837e549-6db2-4dd7-b50e-8f1f2e8d4820",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "summary"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        256
+      ],
+      "id": "cdb17109-dff0-4b36-8128-e48f99649f01",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Prompt', ``, 'string') }}"
+            }
+          ]
+        },
+        "jsonOutput": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Output_Content_as_JSON', ``, 'boolean') }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGeminiTool",
+      "typeVersion": 1,
+      "position": [
+        224,
+        176
+      ],
+      "id": "ad9227f0-94ef-44a1-8bd2-dfa1f094c3ca",
+      "name": "Message a model in Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1eneQAp9GU8odBjD",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        208
+      ],
+      "id": "000d61e5-ac72-4908-8b59-9b1062c45da9",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "9NBjLtxaaf5pNgvA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "(( $json.output ))",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        992,
+        32
+      ],
+      "id": "db7bf124-9a1f-4265-a5f8-9780cf677c1b",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "9NBjLtxaaf5pNgvA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "freelancerak.734@gmail.com",
+        "subject": "Topic summary",
+        "message": "here's the audio file",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1248,
+        64
+      ],
+      "id": "6823235f-c732-4c76-a96a-bb5230d0fedb",
+      "name": "Send a message",
+      "webhookId": "898d26d5-e0a2-424c-b753-d5f84c1af2c4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JQeM81jCLEdxterz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "classify",
+        "input": "(( $json.output ))",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        560,
+        32
+      ],
+      "id": "1670af9e-954f-4aae-af6a-ad4c144ca005",
+      "name": "Classify text for violations",
+      "credentials": {
+        "openAiApi": {
+          "id": "9NBjLtxaaf5pNgvA",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "(( $json.flagged ))",
+                    "rightValue": "false",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "45bb7d3f-218d-432b-8ba3-d112380cfd6b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a9464427-3bc5-4ad6-a318-7c5e049fb630",
+                    "leftValue": "(( $json.flagged ))",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        768,
+        64
+      ],
+      "id": "2c9cb7a3-2058-48b8-a387-1932b9e606e4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "freelancerak.734@gmail.com",
+        "subject": "summary error",
+        "message": "There is a summary violation error. Please check the workflow for details.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        224
+      ],
+      "id": "e9d0b7b5-3d44-4f86-b006-29df5c83ccf2",
+      "name": "Send a message1",
+      "webhookId": "f4f68b2a-9bf6-4b79-8ef3-b49d5baa9a99",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JQeM81jCLEdxterz",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA",
+          "mode": "list",
+          "cachedResultName": "Evaluations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA/edit#gid=0"
+        }
+      },
+      "type": "n8n-nodes-base.evaluationTrigger",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        96
+      ],
+      "id": "dcb57c15-321c-4d09-8793-d9e86641a538",
+      "name": "When fetching a dataset row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NQFKIYAcDUPzBErp",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "9e9401c0-a306-4a8c-8c89-c3a8e639a479",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -48
+      ],
+      "id": "d8161201-3a1c-42f8-8db8-2a2c6e42eb12",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "source": "googleSheets",
+        "documentId": {
+          "__rl": true,
+          "value": "1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA",
+          "mode": "list",
+          "cachedResultName": "Evaluations",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1L0DtzL7Z6i_V24LFXvNdVLu1ecqyn_MbDQOOWgxpZFA/edit#gid=0"
+        },
+        "outputs": {
+          "values": [
+            {
+              "outputName": "output",
+              "outputValue": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        576,
+        -272
+      ],
+      "id": "280721cf-4868-4f68-8444-45155b24da2b",
+      "name": "Evaluation",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "NQFKIYAcDUPzBErp",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "setMetrics",
+        "metric": "helpfulness",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.evaluation",
+      "typeVersion": 4.8,
+      "position": [
+        864,
+        -256
+      ],
+      "id": "e1738338-b27a-4f7f-a682-d86fabd26cd4",
+      "name": "Evaluation1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1424,
+        -128
+      ],
+      "id": "7e4423d2-86a8-412e-b53e-fea57381d6a0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "9NBjLtxaaf5pNgvA",
+          "name": "OpenAi account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Google Gemini": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify text for violations": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When fetching a dataset row": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing1": {
+      "main": [
+        [
+          {
+            "node": "Classify text for violations",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Evaluation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Evaluation1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation": {
+      "main": [
+        [
+          {
+            "node": "Evaluation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "availableInMCP": false
+  },
+  "versionId": "05d1202c-b9e2-4e76-94c4-3fccb0544350",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d8db50547aaf735cd7426888a98278d2df842d8ac08fdb95e2eda4f30a4f75aa"
+  },
+  "id": "TrcRAlzyUGPFNxAd",
+  "tags": []
+}
