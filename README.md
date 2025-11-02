@@ -1,5 +1,7 @@
 # 🎙️ AI Voice Agent Workflow (n8n)
 
+![Workflow](n8n\ 1.png)
+
 This repository contains an **AI Research & Voice Summary Automation Workflow** built using **n8n**.  
 The workflow allows a user to enter a **topic title** and a **time period**, and the system will:
 
